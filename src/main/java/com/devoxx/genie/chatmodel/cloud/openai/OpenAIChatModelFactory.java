@@ -13,7 +13,9 @@ import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class OpenAIChatModelFactory implements ChatModelFactory {
 
@@ -21,6 +23,8 @@ public class OpenAIChatModelFactory implements ChatModelFactory {
 
     @Override
     public ChatModel createChatModel(@NotNull CustomChatModel customChatModel) {
+        Map<String, Object> customParams = getCustomParams();
+
         return OpenAiChatModel.builder()
                 .apiKey(getApiKey(MODEL_PROVIDER))
                 .modelName(customChatModel.getModelName())
@@ -28,8 +32,15 @@ public class OpenAIChatModelFactory implements ChatModelFactory {
                 .maxRetries(customChatModel.getMaxRetries())
                 .timeout(Duration.ofSeconds(customChatModel.getTimeout()))
                 .returnThinking(ThinkingSupport.isEnabled())
+                .customParameters(customParams)
                 .listeners(getListener())
                 .build();
+    }
+
+    private static @NotNull Map<String, Object> getCustomParams() {
+        Map<String, Object> customParams = new HashMap<>();
+        customParams.put("enable_thinking", true);
+        return customParams;
     }
 
     @Override
@@ -40,6 +51,7 @@ public class OpenAIChatModelFactory implements ChatModelFactory {
                 .modelName(customChatModel.getModelName())
                 .timeout(Duration.ofSeconds(customChatModel.getTimeout()))
                 .returnThinking(ThinkingSupport.isEnabled())
+                .customParameters(getCustomParams())
                 .listeners(getListener())
                 .build();
     }
