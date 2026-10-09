@@ -21,7 +21,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.net.http.HttpClient;
 
@@ -68,6 +70,7 @@ public class CustomOpenAIChatModelFactory implements ChatModelFactory {
                 .topP(resolveTopP(customChatModel))
                 .returnThinking(ThinkingSupport.isEnabled())
                 .listeners(getListener())
+                .customParameters(getCustomParams())
                 .httpClientBuilder(getHttpClientBuilder());
 
         applyOutputTokenLimit(builder, customChatModel);
@@ -123,8 +126,15 @@ public class CustomOpenAIChatModelFactory implements ChatModelFactory {
                 .timeout(Duration.ofSeconds(customChatModel.getTimeout()))
                 .returnThinking(ThinkingSupport.isEnabled())
                 .listeners(getListener())
+                .customParameters(getCustomParams())
                 .httpClientBuilder(getHttpClientBuilder())
                 .build();
+    }
+
+    private static @NotNull Map<String, Object> getCustomParams() {
+        Map<String, Object> customParams = new HashMap<>();
+        customParams.put("enable_thinking", true);
+        return customParams;
     }
 
     /**
