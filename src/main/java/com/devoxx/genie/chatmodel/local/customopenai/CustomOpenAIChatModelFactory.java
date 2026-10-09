@@ -10,22 +10,22 @@ import com.devoxx.genie.model.gpt4all.Model;
 import com.devoxx.genie.model.gpt4all.ResponseDTO;
 import com.devoxx.genie.ui.settings.DevoxxGenieStateService;
 import com.intellij.openapi.diagnostic.Logger;
+import dev.langchain4j.http.client.jdk.JdkHttpClient;
+import dev.langchain4j.http.client.jdk.JdkHttpClientBuilder;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
-import dev.langchain4j.http.client.jdk.JdkHttpClient;
-import dev.langchain4j.http.client.jdk.JdkHttpClientBuilder;
 import okhttp3.OkHttpClient;
 import org.jetbrains.annotations.NotNull;
 
+import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.net.http.HttpClient;
 
 public class CustomOpenAIChatModelFactory implements ChatModelFactory {
 
@@ -134,7 +134,9 @@ public class CustomOpenAIChatModelFactory implements ChatModelFactory {
     private static @NotNull Map<String, Object> getCustomParams() {
         Map<String, Object> customParams = new HashMap<>();
         customParams.put("enable_thinking", true);
-        return customParams;
+        Map<String, Object> templateArgs = new HashMap<>();
+        templateArgs.put("chat_template_kwargs", customParams);
+        return templateArgs;
     }
 
     /**
@@ -166,7 +168,7 @@ public class CustomOpenAIChatModelFactory implements ChatModelFactory {
         boolean forceHttp11 = DevoxxGenieStateService.getInstance().isCustomOpenAIForceHttp11();
         return forceHttp11
                 ? JdkHttpClient.builder()
-                        .httpClientBuilder(HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1))
+                .httpClientBuilder(HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1))
                 : JdkHttpClient.builder();
     }
 
@@ -174,7 +176,7 @@ public class CustomOpenAIChatModelFactory implements ChatModelFactory {
      * Fetch the model list from the custom OpenAI-compatible server's
      * {@code /models} endpoint (standard OpenAI {@code {"data":[{"id":...}]}}
      * shape) so the UI can offer a model picker.
-     *
+     * <p>
      * Best-effort: if the URL is unset, the server is unreachable, has no
      * {@code /models} endpoint, or returns an empty/unparseable body, this
      * returns an empty list rather than throwing — the user can still type a
